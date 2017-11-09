@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require "nb_util"
+
+NbUtil::CLI.start(ARGV)
