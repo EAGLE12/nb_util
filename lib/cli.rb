@@ -2,7 +2,6 @@
 require 'pp'
 require 'yaml'
 require 'json'
-
 require 'thor'
 
 module NbUtil
@@ -18,6 +17,10 @@ module NbUtil
      NbUtil.convert(ARGV[1])
     end
 
+    desc "combine [input file1] [input file2]", "combine file1 and file2" # コマンドの使用例と、概要
+    def combine(argv0, argv1) # コマンドはメソッドとして定義する
+      NbUtil.combine(ARGV[1], ARGV[2])
+    end
   end
 end
 

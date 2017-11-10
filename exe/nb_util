@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
 require "nb_util"
+require "nb_util/combine"
 
 NbUtil::CLI.start(ARGV)
