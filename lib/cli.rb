@@ -12,14 +12,14 @@ module NbUtil
       say(word, :red)
     end
 
-    desc "convert [input file name]", "convert yaml to ipynb." # コマンドの使用例と、概要
+    desc "convert [input filename]", "convert yaml to ipynb." # コマンドの使用例と、概要
     def convert(argv0) # コマンドはメソッドとして定義する
      NbUtil.convert(ARGV[1])
     end
 
-    desc "combine [input file1] [input file2]", "combine file1 and file2" # コマンドの使用例と、概要
-    def combine(argv0, argv1) # コマンドはメソッドとして定義する
-      NbUtil.combine(ARGV[1], ARGV[2])
+    desc "combine [input file1] [input file2] [output filename]", "combine file1 and file2" # コマンドの使用例と、概要
+    def combine(argv0, argv1, argv2) # コマンドはメソッドとして定義する
+      NbUtil.combine(ARGV[1], ARGV[2], ARGV[3])
     end
   end
 end
