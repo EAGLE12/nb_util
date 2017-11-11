@@ -1,0 +1,4 @@
+example_id                  | status | run_time        |
+--------------------------- | ------ | --------------- |
+./spec/nb_util_spec.rb[1:1] | passed | 0.0024 seconds  |
+./spec/nb_util_spec.rb[1:2] | failed | 0.03039 seconds |
