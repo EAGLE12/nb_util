@@ -2,5 +2,6 @@
 
 require "nb_util"
 require "nb_util/combine"
+require "nb_util/iputs"
 
 NbUtil::CLI.start(ARGV)

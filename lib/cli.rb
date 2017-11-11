@@ -21,6 +21,12 @@ module NbUtil
     def combine(argv0, argv1, argv2) # コマンドはメソッドとして定義する
       NbUtil.combine(ARGV[1], ARGV[2], ARGV[3])
     end
+
+    desc "iputs [filename]", "display ipynb file contents" # コマンドの使用例と、概要
+    def iputs(argv0) # コマンドはメソッドとして定義する
+      NbUtil.iputs(ARGV[1])
+    end
+
   end
 end
 
