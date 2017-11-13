@@ -7,7 +7,12 @@ require 'cli'
 
 module NbUtil
   module_function
-  puts 'nb_util says hello!!'
+  directry = "#{Dir.home}"
+  def get_name(str)
+    array = str.delete(' ').split(/[\/]/)
+  end
+  name = get_name(directry)
+  puts "nb_util says hello, #{name[2]} !!"
 
   def convert(argv0)
     input_filename = ARGV[1]
