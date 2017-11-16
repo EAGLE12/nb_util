@@ -27,6 +27,11 @@ module NbUtil
       NbUtil.iputs(ARGV[1])
     end
 
+    desc "getcode [filename]", "save in ruby format" # コマンドの使用例と、概要
+    def getcode(argv0) # コマンドはメソッドとして定義する
+      NbUtil.getcode(ARGV[1])
+    end
+    
   end
 end
 
