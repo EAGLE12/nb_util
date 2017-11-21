@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    nb_util (0.2.0)
+    nb_util (0.2.1)
 
 GEM
   remote: https://rubygems.org/
