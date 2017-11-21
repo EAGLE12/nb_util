@@ -8,7 +8,7 @@ module NbUtil
   def getcode(argv0)
     input_filename = ARGV[1]
     ipynb = JSON.parse(File.read(input_filename))
-    ipynb_filename = ARGV[2] || input_filename.gsub(/(.ipynb)$/, '')    
+    ipynb_filename = ARGV[2] || input_filename.gsub(/(.ipynb)$/, '')
     hash = {}
     i = 0
     ipynb["cells"].each do |k, v|
@@ -31,7 +31,7 @@ module NbUtil
       if flag == 0 then
         eval("puts @getcode = @hash#{i}[\"source\"]")
         source_count = source_count + 1
-        output_filename = ipynb_filename + source_count.to_s + ".rb"
+        output_filename = ipynb_filename + source_count.to_s + ipynb["metadata"]["language_info"]["file_extension"]
         File.open(output_filename, 'w+') do |f|
           f.puts(@getcode)
         end
