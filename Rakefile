@@ -12,12 +12,6 @@ end
 desc "open github origin url"
 task :open_github do
   out, err, status = Open3.capture3("git remote -v")
-  url = "https://"
-  out.split("\n").each do |line|
-    if m = line.match(/^origin\s+git@(.+) \(push\)$/)
-      p address = m[1].gsub!(':','/')
-      url += address
-    end
-  end
+  url = "https://"+out.match(/^origin\s+git@(.+) \(fetch\)/)[1].gsub(':','/')
   system "open #{url}"
 end
