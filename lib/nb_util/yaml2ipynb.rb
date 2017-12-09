@@ -7,14 +7,7 @@ require 'cli'
 
 module NbUtil
   module_function
-  directry = "#{Dir.pwd}"
-  def get_name(str)
-    array = str.delete(' ').split(/[\/]/)
-  end
-  name = get_name(directry)
-  puts "nb_util says hello, #{name[2]}!!"
-
-  def convert(argv0)
+  def yaml2ipynb(argv0)
     input_filename = ARGV[1]
     output_filename = ARGV[2] || input_filename.gsub(/(yml|yaml)$/, 'ipynb')
     cont = YAML.load(File.read(ARGV[1]))

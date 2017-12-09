@@ -12,9 +12,9 @@ module NbUtil
       say(word, :red)
     end
 
-    desc "convert [input filename]", "convert yaml to ipynb." # コマンドの使用例と、概要
-    def convert(argv0) # コマンドはメソッドとして定義する
-     NbUtil.convert(ARGV[1])
+    desc "yaml2ipynb [input filename]", "convert yaml to ipynb." # コマンドの使用例と、概要
+    def yaml2ipynb(argv0) # コマンドはメソッドとして定義する
+     NbUtil.yaml2ipynb(ARGV[1])
     end
 
     desc "combine [input file1] [input file2] [output filename]", "combine file1 and file2" # コマンドの使用例と、概要

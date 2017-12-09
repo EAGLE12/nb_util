@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require "nb_util"
-require "nb_util/yamltoipynb"
+require "nb_util/yaml2ipynb"
 require "nb_util/combine"
 require "nb_util/iputs"
 require "nb_util/getcode"
