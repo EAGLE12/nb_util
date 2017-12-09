@@ -12,7 +12,7 @@ module NbUtil
       say(word, :red)
     end
 
-    desc "yaml2ipynb [input filename]", "convert yaml to ipynb." # コマンドの使用例と、概要
+    desc "yaml2ipynb [input filename]", "convert yaml to ipynb" # コマンドの使用例と、概要
     def yaml2ipynb(argv0) # コマンドはメソッドとして定義する
      NbUtil.yaml2ipynb(ARGV[1])
     end
@@ -32,6 +32,9 @@ module NbUtil
       NbUtil.getcode(ARGV[1])
     end
 
+    desc "ipynb2tex [filename]", "convert ipynb to tex" # コマンドの使用例と、概要
+    def ipynb2tex(argv0) # コマンドはメソッドとして定義する
+      Ipynb2tex.new(ARGV[1])
+    end
   end
 end
-
