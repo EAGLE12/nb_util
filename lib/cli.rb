@@ -34,7 +34,7 @@ module NbUtil
 
     desc "ipynb2tex [filename]", "convert ipynb to tex" # コマンドの使用例と、概要
     def ipynb2tex(argv0) # コマンドはメソッドとして定義する
-      Ipynb2tex.new(ARGV[1])
+      NbUtil.ipynb2tex(ARGV[1])
     end
   end
 end
