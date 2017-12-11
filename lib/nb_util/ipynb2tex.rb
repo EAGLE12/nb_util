@@ -8,7 +8,6 @@ require "date"
 module NbUtil
   module_function
   def ipynb2tex(target)
-    #RE_FIGS_EXT << /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
     re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
     info = your_informations(ARGV[1])
     loop do
@@ -17,15 +16,14 @@ module NbUtil
       if input == 'Y' || input == 'y'
         p target = ARGV[1]
         p tex_src = target.sub('.ipynb', '.tex')
-        p target_parent = File.dirname(target)
-        p target_basename = File.basename(tex_src)
+         target_parent = File.dirname(target)
+         target_basename = File.basename(tex_src)
         system "jupyter nbconvert --to latex #{target}"
         lines = File.readlines(tex_src)
         lines.each_with_index do |line,i|
           line.sub!("\documentclass[11pt]{article}",
             "\documentclass[11pt,dvipdfmx]{jsarticle}")
-          #print line.red if line =~ RE_FIGS_EXT
-          print line if line =~ re_fig#redにするやつエラーなるから後でなんとかする
+          print "\e[31m#{line}\e[0m" if line =~ re_fig#redにする"\e[31m\e[0m"
           line.sub!(line, '%' + line) if line.include?('.svg')
         end
         File.open(tex_src, 'w') { |file| file.print lines.join }
@@ -155,7 +153,7 @@ EOS
     print "あなたの名前: "
     info[2] = STDIN.gets.to_s.chomp
 
-    p target_parent = File.dirname(target)
+    target_parent = File.dirname(target)
 
     d = Date.today
     infomations = <<"EOS"
