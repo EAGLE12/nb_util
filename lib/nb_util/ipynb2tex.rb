@@ -8,6 +8,9 @@ require "date"
 module NbUtil
   module_function
   def ipynb2tex(target)
+    p cp_lib_data_pieces = File.join(Dir.pwd, 'lib/data/pieces')
+    p cp_lib_data_thesis = File.join(Dir.pwd, 'lib/data/thesis')
+
     re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
     info = your_informations(ARGV[1])
     loop do
@@ -23,7 +26,7 @@ module NbUtil
         lines.each_with_index do |line,i|
           line.sub!("\documentclass[11pt]{article}",
             "\documentclass[11pt,dvipdfmx]{jsarticle}")
-          print "\e[31m#{line}\e[0m" if line =~ re_fig#redにする"\e[31m\e[0m"
+          print "\e[32m#{line}\e[0m" if line =~ re_fig#redにする"\e[31m\e[0m"
           line.sub!(line, '%' + line) if line.include?('.svg')
         end
         File.open(tex_src, 'w') { |file| file.print lines.join }
@@ -42,6 +45,9 @@ module NbUtil
         FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')        
         FileUtils.mv(target_parent + '/informations.tex', target_parent +'/split_files/informations')
         mk_xbb(target, re_fig)
+
+        FileUtils.cp_r(cp_lib_data_pieces,target_parent)
+        FileUtils.cp_r(cp_lib_data_thesis,target_parent)
         exit
         break
       elsif input == 'N' || input == 'n'
