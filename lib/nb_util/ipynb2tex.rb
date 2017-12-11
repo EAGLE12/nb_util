@@ -10,36 +10,40 @@ module NbUtil
   def ipynb2tex(target)
     #RE_FIGS_EXT << /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
     re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
-    info = your_informations
+    info = your_informations(ARGV[1])
     loop do
       puts ">上記の情報で実行する場合は「Y」、終了する場合は「N」を入力して下さい。"
       input = STDIN.gets.to_s.chomp
       if input == 'Y' || input == 'y'
         p target = ARGV[1]
         p tex_src = target.sub('.ipynb', '.tex')
+        p target_parent = File.dirname(target)
+        p target_basename = File.basename(tex_src)
         system "jupyter nbconvert --to latex #{target}"
         lines = File.readlines(tex_src)
         lines.each_with_index do |line,i|
           line.sub!("\documentclass[11pt]{article}",
             "\documentclass[11pt,dvipdfmx]{jsarticle}")
           #print line.red if line =~ RE_FIGS_EXT
-          print line.red if line =~ re_fig
+          print line if line =~ re_fig#redにするやつエラーなるから後でなんとかする
           line.sub!(line, '%' + line) if line.include?('.svg')
         end
         File.open(tex_src, 'w') { |file| file.print lines.join }
-        FileUtils.mkdir_p('latex')
-        FileUtils.mv(tex_src, 'latex')
-        replace_figs(File.join('latex',tex_src))
-        revise_lines(File.join('latex',tex_src))
-        split_files(File.join('latex',tex_src))
-        FileUtils.mv('intro.tex', './split_files/intro')
-        FileUtils.mv('background.tex', './split_files/background')
-        FileUtils.mv('method.tex', './split_files/method')
-        FileUtils.mv('result.tex', './split_files/result')
-        FileUtils.mv('summary.tex', './split_files/summary')
-        FileUtils.mv('tmp.tex', './split_files/tmp')
-        FileUtils.mv('informations.tex', './split_files/informations')
-        mk_xbb
+
+        FileUtils.mkdir_p(target_parent +'/latex')
+        FileUtils.mv(tex_src, target_parent +'/latex')       
+        replace_figs(File.join(target_parent +'/latex',target_basename))
+        revise_lines(File.join(target_parent +'/latex',target_basename))
+        split_files(File.join(target_parent +'/latex',target_basename))
+        
+        FileUtils.mv(target_parent + '/intro.tex', target_parent + '/split_files/intro')
+        FileUtils.mv(target_parent + '/background.tex', target_parent + '/split_files/background')
+        FileUtils.mv(target_parent + '/method.tex', target_parent + '/split_files/method')
+        FileUtils.mv(target_parent + '/result.tex', target_parent + '/split_files/result')
+        FileUtils.mv(target_parent + '/summary.tex', target_parent + '/split_files/summary')
+        FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')        
+        FileUtils.mv(target_parent + '/informations.tex', target_parent +'/split_files/informations')
+        mk_xbb(target, re_fig)
         exit
         break
       elsif input == 'N' || input == 'n'
@@ -69,12 +73,13 @@ def revise_lines(target)
   end
 
   def split_files(target)
-    splitters = [ ["\\section{序論}","intro.tex", FileUtils.mkdir_p("./split_files/intro")],
-      ["\\section{物理的背景}","background.tex", FileUtils.mkdir_p("./split_files/background")],
-      ["\\section{視覚化}","method.tex", FileUtils.mkdir_p("./split_files/method")],
-      ["\\section{結果}","result.tex", FileUtils.mkdir_p("./split_files/result")],
-      ["\\section{総括}","summary.tex", FileUtils.mkdir_p("./split_files/summary")],
-      ["\\begin{Verbatim}","tmp.tex", FileUtils.mkdir_p("./split_files/tmp")]]
+    target_parent = File.absolute_path("../..", target) 
+    splitters = [ ["\\section{序論}",target_parent + '/intro.tex', FileUtils.mkdir_p(target_parent + '/split_files/intro')],
+      ["\\section{物理的背景}",target_parent + '/background.tex', FileUtils.mkdir_p(target_parent + '/split_files/background')],
+      ["\\section{視覚化}",target_parent + '/method.tex', FileUtils.mkdir_p(target_parent + '/split_files/method')],
+      ["\\section{結果}",target_parent + '/result.tex', FileUtils.mkdir_p(target_parent + '/split_files/result')],
+      ["\\section{総括}",target_parent + '/summary.tex', FileUtils.mkdir_p(target_parent + '/split_files/summary')],
+      ["\\begin{Verbatim}",target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
     cont = File.read(target)
     splitters.reverse.each do |splitter|
       split = cont.split(splitter[0])
@@ -107,7 +112,6 @@ def revise_lines(target)
         wrap_figs = <<"EOS"
 \\begin{wrapfigure}{r}{#{size}mm}
 \\begin{center}
-
 \\includegraphics[bb= 0 0 1024 768, width=#{size}mm]{../#{file_name}}
 #{caption}
 \\label{fig:#{label_name}}
@@ -127,11 +131,12 @@ EOS
     end
   end
 
-  def mk_xbb
-    FileUtils.mkdir_p('./figs')
-    FileUtils.cd('./figs')
+  def mk_xbb(target, re_fig)
+    target_parent = File.absolute_path("../..", target) 
+    FileUtils.mkdir_p(target_parent + '/figs')
+    FileUtils.cd(target_parent +'/figs')
     Dir.entries('.').each do |file|
-      next unless file =~ RE_FIGS_EXT
+      next unless file =~ re_fig
       p m = file.split('.')[0..-2]
       next if File.exists?(m.join('.')+'.xbb')
       command = "extractbb #{file}"
@@ -140,7 +145,7 @@ EOS
     end
   end
 
-  def your_informations
+  def your_informations(target)
     info = Array.new(3)
 
     print "卒論の題目: "
@@ -149,6 +154,8 @@ EOS
     info[1] = STDIN.gets.to_s.chomp
     print "あなたの名前: "
     info[2] = STDIN.gets.to_s.chomp
+
+    p target_parent = File.dirname(target)
 
     d = Date.today
     infomations = <<"EOS"
@@ -159,8 +166,8 @@ EOS
 \\maketitle
 \\newpage
 EOS
-    FileUtils.mkdir_p('./split_files/informations')
-    File.open("informations.tex", "w") do |f|
+    FileUtils.mkdir_p(target_parent + '/split_files/informations')
+    File.open(target_parent + '/informations.tex', "w") do |f|
       f.print(infomations)
     end
   end
