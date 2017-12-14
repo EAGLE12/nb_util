@@ -12,10 +12,10 @@ module NbUtil
     location = Open3.capture3("gem environment gemdir")
     versions = Open3.capture3("gem list nb_util")
     latest_version = versions[0].split(",")
-    p cp_lib_data_pieces_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
-    p cp_lib_data_thesis_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
-    p cp_lib_data_pieces_bundle = File.join(Dir.pwd, 'lib/data/thesis')
-    p cp_lib_data_thesis_bundle = File.join(Dir.pwd, 'lib/data/pieces')
+    cp_lib_data_pieces_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
+    cp_lib_data_thesis_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
+    cp_lib_data_pieces_bundle = File.join(Dir.pwd, 'lib/data/thesis')
+    cp_lib_data_thesis_bundle = File.join(Dir.pwd, 'lib/data/pieces')
 
     re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
     info = your_informations(ARGV[1])
@@ -23,8 +23,12 @@ module NbUtil
       puts ">上記の情報で実行する場合は「Y」、終了する場合は「N」を入力して下さい。"
       input = STDIN.gets.to_s.chomp
       if input == 'Y' || input == 'y'
-        p target = ARGV[1]
-        p tex_src = target.sub('.ipynb', '.tex')
+        print "\e[32minputfile: \e[0m"
+        target = ARGV[1]
+        print "\e[32m#{target}\n\e[0m"
+        print "\e[32moutputfile: \e[0m"
+        tex_src = target.sub('.ipynb', '.tex')
+        print "\e[32m#{tex_src}\n\e[0m"
         target_parent = File.dirname(target)
         target_basename = File.basename(tex_src)
         Open3.capture3("jupyter nbconvert --to latex #{target}")
@@ -32,7 +36,7 @@ module NbUtil
         lines.each_with_index do |line,i|
           line.sub!("\documentclass[11pt]{article}",
             "\documentclass[11pt,dvipdfmx]{jsarticle}")
-          print "\e[32m#{line}\e[0m" if line =~ re_fig  #redにする"\e[31m\e[0m"
+          print "\e[32m#{line}\n\e[0m" if line =~ re_fig  #redにする"\e[31m\e[0m"
           line.sub!(line, '%' + line) if line.include?('.svg')
         end
         File.open(tex_src, 'w') { |file| file.print lines.join }
@@ -62,6 +66,8 @@ module NbUtil
 
         mk_latex_and_mv_to_latex(target, target_parent)
         Open3.capture3("open #{target_parent}")
+        Open3.capture3("open #{target_parent}/mk_latex/thesis/thesis.tex/")
+
         exit
         break
       elsif input == 'N' || input == 'n'
@@ -125,12 +131,12 @@ module NbUtil
       if m = line.match(/\\includegraphics\{(.+)\}/)
         counter += 1
         file_name, label, size, top, bottom = [m[1], data[counter]].flatten
-        p caption = lines[i + 1]
+        caption = lines[i + 1]
         label_name = file_name.to_s.gsub('figs', '').gsub('.png', '').gsub('/', '')
         wrap_figs = <<"EOS"
 \\begin{wrapfigure}{r}{#{size}mm}
 \\begin{center}
-\\includegraphics[bb= 0 0 1024 768, width=#{size}mm]{../#{file_name}}
+\\includegraphics[bb= 0 0 1024 768, width=#{size}mm]{../../#{file_name}}
 #{caption}
 \\label{fig:#{label_name}}
 \\end{center}
@@ -139,7 +145,7 @@ EOS
         # \\vspace{#{top}\\baselineskip}
         # \\vspace{#{bottom}\\baselineskip}
 
-        puts lines[i] = wrap_figs
+        lines[i] = wrap_figs
         lines.delete_at(i + 1) # if no caption, comment out here
       end
     end
@@ -150,12 +156,12 @@ EOS
   end
 
   def mk_xbb(target, re_fig)
-    target_parent = File.absolute_path("../..", target) 
+    target_parent = File.absolute_path("../..", target)
     FileUtils.mkdir_p(target_parent + '/figs')
     FileUtils.cd(target_parent + '/figs')
     Dir.entries('.').each do |file|
       next unless file =~ re_fig
-      p m = file.split('.')[0..-2]
+      m = file.split('.')[0..-2]
       next if File.exist?(m.join('.') + '.xbb')
       command = "extractbb #{file}"
       p command
@@ -174,7 +180,6 @@ EOS
     info[2] = STDIN.gets.to_s.chomp
 
     target_parent = File.dirname(target)
-
     d = Date.today
     infomations = <<"EOS"
 \\title{卒業論文\\\\#{info[0]}}
