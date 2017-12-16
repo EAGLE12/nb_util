@@ -12,13 +12,14 @@ module NbUtil
     location = Open3.capture3("gem environment gemdir")
     versions = Open3.capture3("gem list nb_util")
     latest_version = versions[0].split(",")
-    cp_lib_data_pieces_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
-    cp_lib_data_thesis_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
-    cp_lib_data_pieces_bundle = File.join(Dir.pwd, 'lib/data/thesis')
-    cp_lib_data_thesis_bundle = File.join(Dir.pwd, 'lib/data/pieces')
-
+    cp_lib_data_thesis_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
+    cp_lib_data_pieces_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
+    cp_lib_data_thesis_bundle = File.join(Dir.pwd, 'lib/data/thesis')
+    cp_lib_data_pieces_bundle = File.join(Dir.pwd, 'lib/data/pieces')
     re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
-    info = your_informations(ARGV[1])
+    your_informations(ARGV[1])
+
+#    mk_thesis(ARGV[1])
     loop do
       puts ">上記の情報で実行する場合は「Y」、終了する場合は「N」を入力して下さい。"
       input = STDIN.gets.to_s.chomp
@@ -45,25 +46,30 @@ module NbUtil
         FileUtils.mv(tex_src, target_parent + '/latex')
         replace_figs(File.join(target_parent + '/latex', target_basename))
         revise_lines(File.join(target_parent + '/latex', target_basename))
-        split_files(File.join(target_parent + '/latex', target_basename))
-
-        FileUtils.mv(target_parent + '/intro.tex', target_parent + '/split_files/intro')
-        FileUtils.mv(target_parent + '/background.tex', target_parent + '/split_files/background')
-        FileUtils.mv(target_parent + '/method.tex', target_parent + '/split_files/method')
-        FileUtils.mv(target_parent + '/result.tex', target_parent + '/split_files/result')
-        FileUtils.mv(target_parent + '/summary.tex', target_parent + '/split_files/summary')
+        split_files(File.join(target_parent + '/latex', target_basename), target)
         FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')
         FileUtils.mv(target_parent + '/informations.tex', target_parent + '/split_files/informations')
-        mk_xbb(target, re_fig)
+        mk_thesis_location(target)
+        FileUtils.mv(target_parent + '/.splits_location.tex', target_parent + '/thesis')
 
-        if File.exist?(cp_lib_data_pieces_gem) && File.exist?(cp_lib_data_thesis_gem) then
-          FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
-          FileUtils.cp_r(cp_lib_data_thesis_gem, target_parent)
-        else
+ #       FileUtils.mv(target_parent + '/thesis.tex', target_parent + '/thesis')
+        mk_xbb(target, re_fig)
+=begin
+        if File.exist?(cp_lib_data_pieces_bundle) then
           FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_bundle, target_parent)
+        else
+          FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
+          FileUtils.cp_r(cp_lib_data_thesis_gem, target_parent)
         end
-
+=end
+        if (Open3.capture3("bundle exec exe/nb_util ipynb2tex #{target}")) then
+          FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
+          FileUtils.cp_r(cp_lib_data_thesis_bundle, target_parent)
+        else
+          FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
+          FileUtils.cp_r(cp_lib_data_thesis_gem, target_parent)
+        end
         mk_latex_and_mv_to_latex(target, target_parent)
         Open3.capture3("open #{target_parent}")
         Open3.capture3("open #{target_parent}/mk_latex/thesis/thesis.tex/")
@@ -96,25 +102,29 @@ module NbUtil
     end
   end
 
-  def split_files(target)
+  def split_files(target, input_ipynb)
     target_parent = File.absolute_path("../..", target)
-    splitters = [ ["\\section{序論}", target_parent + '/intro.tex', FileUtils.mkdir_p(target_parent + '/split_files/intro')],
-      ["\\section{物理的背景}", target_parent + '/background.tex', FileUtils.mkdir_p(target_parent + '/split_files/background')],
-      ["\\section{視覚化}", target_parent + '/method.tex', FileUtils.mkdir_p(target_parent + '/split_files/method')],
-      ["\\section{結果}", target_parent + '/result.tex', FileUtils.mkdir_p(target_parent + '/split_files/result')],
-      ["\\section{総括}", target_parent + '/summary.tex', FileUtils.mkdir_p(target_parent + '/split_files/summary')],
-      ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
-    cont = File.read(target)
-    splitters.reverse.each do |splitter|
-      split = cont.split(splitter[0])
-      split[1].to_s.gsub!(/subsection/, 'section')
-      split[1].to_s.gsub!(/subsubsection/, 'subsection')
-      split[1].to_s.gsub!(/paragraph/, 'subsubsection')
-      cont = split[0]
-      File.open(splitter[1],'w') do |f|
-        f.print splitter[0].gsub!(/section/, 'chapter')
-        f.print split[1]
+    ipynb = JSON.parse(File.read(input_ipynb))
+    pickup_ipynb = ipynb["cells"].to_s.split(",")
+    chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '') }
+    p chapter_size = chapter.size
+
+    for num in 0..chapter_size-1 do
+      splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num}")],
+        ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
+      cont = File.read(target)
+      splitters.reverse.each do |splitter|
+        split = cont.split(splitter[0])
+        split[1].to_s.gsub!(/subsection/, 'section')
+        split[1].to_s.gsub!(/subsubsection/, 'subsection')
+        split[1].to_s.gsub!(/paragraph/, 'subsubsection')
+        cont = split[0]
+        File.open(splitter[1], 'w') do |f|
+          f.print splitter[0].gsub!(/section/, 'chapter')
+          f.print split[1]
+        end
       end
+      FileUtils.mv(target_parent + "/chapter#{num}.tex", target_parent + "/split_files/chapter#{num}")
     end
   end
 
@@ -210,5 +220,20 @@ EOS
     FileUtils.mv(pieces, mk_latex[0])
     FileUtils.mv(thesis, mk_latex[0])
     FileUtils.mv(latex, mk_latex[0])
+  end
+
+  def mk_thesis_location(input_ipynb)
+    target_parent = File.dirname(input_ipynb)
+    ipynb = JSON.parse(File.read(input_ipynb))
+    pickup_ipynb = ipynb["cells"].to_s.split(",")
+    chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '') }
+    p chapter_size = chapter.size
+
+    FileUtils.mkdir_p(target_parent + '/thesis')
+    File.open(target_parent + '/.splits_location.tex', "w") do |f|
+      for num in 0..chapter_size-1 do
+        f.print("\\input{../split_files/chapter#{num}/chapter#{num}}\n")
+      end
+    end
   end
 end
