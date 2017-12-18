@@ -9,21 +9,21 @@ require 'open3'
 module NbUtil
   module_function
   def ipynb2tex(target)
-    location = Open3.capture3("gem environment gemdir")
-    versions = Open3.capture3("gem list nb_util")
-    latest_version = versions[0].split(",")
-    cp_lib_data_thesis_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
-    cp_lib_data_pieces_gem = File.join(location[0].chomp, "gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
-    cp_lib_data_thesis_bundle = File.join(Dir.pwd, 'lib/data/thesis')
-    cp_lib_data_pieces_bundle = File.join(Dir.pwd, 'lib/data/pieces')
-    re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
-    your_informations(ARGV[1])
-
-#    mk_thesis(ARGV[1])
     loop do
+      your_informations(ARGV[1])
+
       puts ">上記の情報で実行する場合は「Y」、終了する場合は「N」を入力して下さい。"
       input = STDIN.gets.to_s.chomp
       if input == 'Y' || input == 'y'
+        location = Open3.capture3("gem environment gemdir")
+        versions = Open3.capture3("gem list nb_util")
+        latest_version = versions[0].split(",")
+      p cp_lib_data_thesis_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
+      p cp_lib_data_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
+        cp_lib_data_thesis_bundle = File.join(Dir.pwd, '/lib/data/thesis')
+        cp_lib_data_pieces_bundle = File.join(Dir.pwd, '/lib/data/pieces')
+        re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
+
         print "\e[32minputfile: \e[0m"
         target = ARGV[1]
         print "\e[32m#{target}\n\e[0m"
@@ -34,7 +34,7 @@ module NbUtil
         target_basename = File.basename(tex_src)
         Open3.capture3("jupyter nbconvert --to latex #{target}")
         lines = File.readlines(tex_src)
-        lines.each_with_index do |line,i|
+        lines.each_with_index do |line, i|
           line.sub!("\documentclass[11pt]{article}",
             "\documentclass[11pt,dvipdfmx]{jsarticle}")
           print "\e[32m#{line}\n\e[0m" if line =~ re_fig  #redにする"\e[31m\e[0m"
@@ -52,9 +52,8 @@ module NbUtil
         mk_thesis_location(target)
         FileUtils.mv(target_parent + '/.splits_location.tex', target_parent + '/thesis')
 
- #       FileUtils.mv(target_parent + '/thesis.tex', target_parent + '/thesis')
         mk_xbb(target, re_fig)
-=begin
+
         if File.exist?(cp_lib_data_pieces_bundle) then
           FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_bundle, target_parent)
@@ -62,7 +61,7 @@ module NbUtil
           FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_gem, target_parent)
         end
-=end
+=begin
         if (Open3.capture3("bundle exec exe/nb_util ipynb2tex #{target}")) then
           FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_bundle, target_parent)
@@ -70,6 +69,7 @@ module NbUtil
           FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_gem, target_parent)
         end
+=end
         mk_latex_and_mv_to_latex(target, target_parent)
         Open3.capture3("open #{target_parent}")
         Open3.capture3("open #{target_parent}/mk_latex/thesis/thesis.tex/")
@@ -107,7 +107,7 @@ module NbUtil
     ipynb = JSON.parse(File.read(input_ipynb))
     pickup_ipynb = ipynb["cells"].to_s.split(",")
     chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '') }
-    p chapter_size = chapter.size
+    chapter_size = chapter.size
 
     for num in 0..chapter_size-1 do
       splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num}")],
@@ -119,9 +119,12 @@ module NbUtil
         split[1].to_s.gsub!(/subsubsection/, 'subsection')
         split[1].to_s.gsub!(/paragraph/, 'subsubsection')
         cont = split[0]
+        puts split[1]
         File.open(splitter[1], 'w') do |f|
           f.print splitter[0].gsub!(/section/, 'chapter')
           f.print split[1]
+
+
         end
       end
       FileUtils.mv(target_parent + "/chapter#{num}.tex", target_parent + "/split_files/chapter#{num}")
@@ -227,7 +230,7 @@ EOS
     ipynb = JSON.parse(File.read(input_ipynb))
     pickup_ipynb = ipynb["cells"].to_s.split(",")
     chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '') }
-    p chapter_size = chapter.size
+    chapter_size = chapter.size
 
     FileUtils.mkdir_p(target_parent + '/thesis')
     File.open(target_parent + '/.splits_location.tex', "w") do |f|
