@@ -54,7 +54,7 @@ module NbUtil
 
         mk_xbb(target, re_fig)
 
-        if File.exist?(cp_lib_data_pieces_bundle) then
+        if File.exist?(cp_lib_data_pieces_bundle)
           FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_bundle, target_parent)
         else
@@ -108,7 +108,6 @@ module NbUtil
     pickup_ipynb = ipynb["cells"].to_s.split(",")
     chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '') }
     chapter_size = chapter.size
-
     for num in 0..chapter_size-1 do
       splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num}")],
         ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
@@ -119,12 +118,15 @@ module NbUtil
         split[1].to_s.gsub!(/subsubsection/, 'subsection')
         split[1].to_s.gsub!(/paragraph/, 'subsubsection')
         cont = split[0]
-        puts split[1]
+
         File.open(splitter[1], 'w') do |f|
           f.print splitter[0].gsub!(/section/, 'chapter')
-          f.print split[1]
-
-
+          if num+1 != chapter_size
+            f.print split[1].sub!(/ \\section{#{chapter[num+1]}}\\label.*/m, '')
+          end
+          if num+1 == chapter_size
+            f.print split[1]
+          end
         end
       end
       FileUtils.mv(target_parent + "/chapter#{num}.tex", target_parent + "/split_files/chapter#{num}")
