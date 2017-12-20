@@ -12,14 +12,14 @@ module NbUtil
     loop do
       your_informations(ARGV[1])
 
-      puts ">上記の情報で実行する場合は「Y」、終了する場合は「N」を入力して下さい。"
+      print "Are you ok with it?: "
       input = STDIN.gets.to_s.chomp
       if input == 'Y' || input == 'y'
         location = Open3.capture3("gem environment gemdir")
         versions = Open3.capture3("gem list nb_util")
         latest_version = versions[0].split(",")
-      p cp_lib_data_thesis_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
-      p cp_lib_data_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
+        p cp_lib_data_thesis_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
+        p cp_lib_data_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
         cp_lib_data_thesis_bundle = File.join(Dir.pwd, '/lib/data/thesis')
         cp_lib_data_pieces_bundle = File.join(Dir.pwd, '/lib/data/pieces')
         re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
@@ -54,13 +54,14 @@ module NbUtil
 
         mk_xbb(target, re_fig)
 
-        if File.exist?(cp_lib_data_pieces_bundle)
+        if Dir.exist?(cp_lib_data_pieces_bundle.to_s)
           FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_bundle, target_parent)
         else
           FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_gem, target_parent)
         end
+
 =begin
         if (Open3.capture3("bundle exec exe/nb_util ipynb2tex #{target}")) then
           FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
@@ -77,10 +78,7 @@ module NbUtil
         exit
         break
       elsif input == 'N' || input == 'n'
-        p '作業を中断します'
         break
-      else
-        p "「Y」又は「N」を入力して下さい"
       end
     end
   end
@@ -149,13 +147,11 @@ module NbUtil
         caption = lines[i + 1]
         label_name = file_name.to_s.gsub('figs', '').gsub('.png', '').gsub('/', '')
         wrap_figs = <<"EOS"
-\\begin{wrapfigure}{r}{#{size}mm}
 \\begin{center}
-\\includegraphics[bb= 0 0 1024 768, width=#{size}mm]{../../#{file_name}}
-#{caption}
-\\label{fig:#{label_name}}
+\\includegraphics[width=#{size}mm]{../../#{file_name}}
 \\end{center}
-\\end{wrapfigure}
+#{caption}
+\\label{fig:#{label}}
 EOS
         # \\vspace{#{top}\\baselineskip}
         # \\vspace{#{bottom}\\baselineskip}
@@ -187,11 +183,11 @@ EOS
   def your_informations(target)
     info = Array.new(3)
 
-    print "卒論の題目: "
+    print "thesis title: "
     info[0] = STDIN.gets.to_s.chomp
-    print "学籍番号（7桁）: "
+    print "student number(eight-digit): "
     info[1] = STDIN.gets.to_s.chomp
-    print "あなたの名前: "
+    print "your name: "
     info[2] = STDIN.gets.to_s.chomp
 
     target_parent = File.dirname(target)
@@ -211,10 +207,16 @@ EOS
   end
 
   def mk_latex_and_mv_to_latex(target, target_parent)
-    mk_latex = File.join(File.dirname(target),'/mk_latex')
     mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex'))
-    FileUtils.rm_r(mk_latex[0])
+    if Dir.exist?(File.join(mk_latex[0].to_s, '/pieces'))
+      d = Date.today
+      old_file = File.join(File.dirname(target),"/old/#{d.year}_#{d.month}_#{d.day}")
+      FileUtils.mkdir_p(old_file)
+      FileUtils.cp_r(mk_latex[0], old_file)
+      FileUtils.rm_r(mk_latex[0])
+    end
     mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex'))
+
     #p split_files = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex/split_files'))
     split_files = File.join(target_parent, '/split_files')
     pieces = File.join(target_parent, '/pieces')
