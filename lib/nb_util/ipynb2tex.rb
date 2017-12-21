@@ -24,7 +24,7 @@ module NbUtil
         re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
 
         print "\e[32minputfile: \e[0m"
-        target = ARGV[1]
+        target = File.expand_path(ARGV[1])
         print "\e[32m#{target}\n\e[0m"
         print "\e[32moutputfile: \e[0m"
         tex_src = target.sub('.ipynb', '.tex')
@@ -224,7 +224,7 @@ EOS
     thesis = File.join(target_parent, '/thesis')
     latex = File.join(target_parent, '/latex')
 
-    FileUtils.mv(split_files, mk_latex[0]+'/split_files')
+    FileUtils.mv(split_files, File.join(mk_latex[0], "/split_files"))
     FileUtils.mv(pieces, mk_latex[0])
     FileUtils.mv(thesis, mk_latex[0])
     FileUtils.mv(latex, mk_latex[0])
