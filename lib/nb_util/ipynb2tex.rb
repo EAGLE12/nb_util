@@ -17,8 +17,8 @@ module NbUtil
         location = Open3.capture3("gem environment gemdir")
         versions = Open3.capture3("gem list nb_util")
         latest_version = versions[0].split(",")
-        p cp_lib_data_thesis_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
-        p cp_lib_data_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
+        cp_lib_data_thesis_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
+        cp_lib_data_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
         cp_lib_data_thesis_bundle = File.join(Dir.pwd, '/lib/data/thesis')
         cp_lib_data_pieces_bundle = File.join(Dir.pwd, '/lib/data/pieces')
         re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
