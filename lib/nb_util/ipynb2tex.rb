@@ -11,7 +11,6 @@ module NbUtil
   def ipynb2tex(target)
     loop do
       your_informations(ARGV[1])
-
       print "Are you ok with it?: "
       input = STDIN.gets.to_s.chomp
       if input == 'Y' || input == 'y'
@@ -78,6 +77,8 @@ module NbUtil
         exit
         break
       elsif input == 'N' || input == 'n'
+        target_parent = File.dirname(target)
+        FileUtils.rm_r(File.join(target_parent.to_s, '/informations.tex'))
         break
       end
     end
@@ -210,7 +211,7 @@ EOS
     mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex'))
     if Dir.exist?(File.join(mk_latex[0].to_s, '/pieces'))
       d = Date.today
-      old_file = File.join(File.dirname(target),"/old/#{d.year}_#{d.month}_#{d.day}")
+      old_file = File.join(File.dirname(target),"/old/#{d.year}#{d.month}#{d.day}")
       FileUtils.mkdir_p(old_file)
       FileUtils.cp_r(mk_latex[0], old_file)
       FileUtils.rm_r(mk_latex[0])
