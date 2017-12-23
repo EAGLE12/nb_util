@@ -8,9 +8,17 @@ require 'thor'
 module NbUtil
   class CLI < Thor
 
-    desc "red WORD", "red words print." # コマンドの概要(サンプル)
+    desc "red WORD [OPTION]", "red words print." # コマンドの概要(サンプル)
+    method_option :upcase, :aliases => '-u', :desc => "upcases the contents of str"
+    method_option :downcase, :aliases => '-d', :desc => "downcases the contents of str"
     def red(word) # コマンドはメソッドとして定義する
-      say(word, :red)
+      if options[:upcase]
+        say(word.upcase, :red)
+      elsif options[:downcase]
+        say(word.downcase, :red)
+      else
+        say(word, :red)
+      end
     end
 
     desc "yaml2ipynb [input filename]", "convert yaml to ipynb" # コマンドの使用例と、概要
@@ -33,13 +41,14 @@ module NbUtil
       NbUtil.getcode(ARGV[1])
     end
 
-    desc "ipynb2tex [filename]", "convert ipynb to tex" # コマンドの使用例と、概要
+    desc "ipynb2tex [filename]", "convert ipynb to tex's thiesis format" # コマンドの使用例と、概要
+    option :handout, :aliases => '-h', :desc => "convert ipynb to tex's handout format"
     def ipynb2tex(argv0) # コマンドはメソッドとして定義する
-      NbUtil.ipynb2tex(ARGV[1])
-      #  NbUtil.revise_lines(ARGV[1])
-      #  NbUtil.split_files(ARGV[1])
-      #  NbUtil.replace_figs(ARGV[1])
-      #  NbUtil.your_informations(ARGV[1])
+      if options[:handout]
+        NbUtil.ipynb2tex_handout(ARGV[1])
+      else
+        NbUtil.ipynb2tex_thesis(ARGV[1])
+      end
     end
   end
 end

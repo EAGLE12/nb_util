@@ -8,7 +8,7 @@ require 'open3'
 
 module NbUtil
   module_function
-  def ipynb2tex(target)
+  def ipynb2tex_thesis(target)
     loop do
       your_informations(ARGV[1])
       print "Are you ok with it?: "
@@ -48,12 +48,12 @@ module NbUtil
         split_files(File.join(target_parent + '/latex', target_basename), target)
         FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')
         FileUtils.mv(target_parent + '/informations.tex', target_parent + '/split_files/informations')
-        mk_thesis_location(target)
+        mk_thesis_location(target, "thesis")
         FileUtils.mv(target_parent + '/.splits_location.tex', target_parent + '/thesis')
 
         mk_xbb(target, re_fig)
 
-        if Dir.exist?(cp_lib_data_pieces_bundle.to_s)
+        if Dir.exist?(cp_lib_data_pieces_bundle.to_s) && Dir.exist?(cp_lib_data_thesis_bundle.to_s)
           FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_bundle, target_parent)
         else
@@ -61,16 +61,7 @@ module NbUtil
           FileUtils.cp_r(cp_lib_data_thesis_gem, target_parent)
         end
 
-=begin
-        if (Open3.capture3("bundle exec exe/nb_util ipynb2tex #{target}")) then
-          FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
-          FileUtils.cp_r(cp_lib_data_thesis_bundle, target_parent)
-        else
-          FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
-          FileUtils.cp_r(cp_lib_data_thesis_gem, target_parent)
-        end
-=end
-        mk_latex_and_mv_to_latex(target, target_parent)
+        mk_latex_and_mv_to_latex(target, target_parent, "thesis")
         Open3.capture3("open #{target_parent}")
         Open3.capture3("open #{target_parent}/mk_latex/thesis/thesis.tex/")
 
@@ -83,6 +74,73 @@ module NbUtil
       end
     end
   end
+
+   def ipynb2tex_handout(target)
+     loop do
+       your_informations(ARGV[1])
+       p 'handout'
+       print "Are you ok with it?: "
+       input = STDIN.gets.to_s.chomp
+       if input == 'Y' || input == 'y'
+         location = Open3.capture3("gem environment gemdir")
+         versions = Open3.capture3("gem list nb_util")
+         latest_version = versions[0].split(",")
+         cp_lib_data_handout_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/handout")
+         cp_lib_data_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
+         cp_lib_data_handout_bundle = File.join(Dir.pwd, '/lib/data/handout')
+         cp_lib_data_pieces_bundle = File.join(Dir.pwd, '/lib/data/pieces')
+         re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
+
+         print "\e[32minputfile: \e[0m"
+         target = File.expand_path(ARGV[1])
+         print "\e[32m#{target}\n\e[0m"
+         print "\e[32moutputfile: \e[0m"
+         tex_src = target.sub('.ipynb', '.tex')
+         print "\e[32m#{tex_src}\n\e[0m"
+         target_parent = File.dirname(target)
+         target_basename = File.basename(tex_src)
+         Open3.capture3("jupyter nbconvert --to latex #{target}")
+         lines = File.readlines(tex_src)
+         lines.each_with_index do |line, i|
+           line.sub!("\documentclass[11pt]{article}",
+             "\documentclass[11pt,dvipdfmx]{jsarticle}")
+           print "\e[32m#{line}\n\e[0m" if line =~ re_fig  #redにする"\e[31m\e[0m"
+           line.sub!(line, '%' + line) if line.include?('.svg')
+         end
+         File.open(tex_src, 'w') { |file| file.print lines.join }
+
+         FileUtils.mkdir_p(target_parent + '/latex')
+         FileUtils.mv(tex_src, target_parent + '/latex')
+         replace_figs(File.join(target_parent + '/latex', target_basename))
+         revise_lines(File.join(target_parent + '/latex', target_basename))
+         split_files(File.join(target_parent + '/latex', target_basename), target)
+         FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')
+         FileUtils.mv(target_parent + '/informations.tex', target_parent + '/split_files/informations')
+         mk_thesis_location(target, "handout")
+         FileUtils.mv(target_parent + '/.splits_location.tex', target_parent + '/handout')
+
+         mk_xbb(target, re_fig)
+         if Dir.exist?(cp_lib_data_pieces_bundle.to_s) && Dir.exist?(cp_lib_data_handout_bundle.to_s)
+           FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
+           FileUtils.cp_r(cp_lib_data_handout_bundle, target_parent)
+         else
+           FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
+           FileUtils.cp_r(cp_lib_data_handout_gem, target_parent)
+         end
+
+         mk_latex_and_mv_to_latex(target, target_parent, "handout")
+         Open3.capture3("open #{target_parent}")
+         Open3.capture3("open #{target_parent}/mk_latex/handout/handout.tex/")
+
+         exit
+         break
+       elsif input == 'N' || input == 'n'
+         target_parent = File.dirname(target)
+         FileUtils.rm_r(File.join(target_parent.to_s, '/informations.tex'))
+         break
+       end
+     end
+   end
 
   def revise_lines(target)
     bugs = [['\end{quote}',:chomp]]
@@ -154,9 +212,6 @@ module NbUtil
 #{caption}
 \\label{fig:#{label}}
 EOS
-        # \\vspace{#{top}\\baselineskip}
-        # \\vspace{#{bottom}\\baselineskip}
-
         lines[i] = wrap_figs
         lines.delete_at(i + 1) # if no caption, comment out here
       end
@@ -207,37 +262,55 @@ EOS
     end
   end
 
-  def mk_latex_and_mv_to_latex(target, target_parent)
+  def mk_latex_and_mv_to_latex(target, target_parent, thesis_or_handout)
     mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex'))
     if Dir.exist?(File.join(mk_latex[0].to_s, '/pieces'))
       d = Date.today
-      old_file = File.join(File.dirname(target),"/old/#{d.year}#{d.month}#{d.day}")
+      if thesis_or_handout == "thesis"
+        old_file = File.join(File.dirname(target),"/old/thesis/#{d.year}#{d.month}#{d.day}")
+      end
+      if thesis_or_handout == "handout"
+        old_file = File.join(File.dirname(target),"/old/handout/#{d.year}#{d.month}#{d.day}")
+      end
+
       FileUtils.mkdir_p(old_file)
       FileUtils.cp_r(mk_latex[0], old_file)
       FileUtils.rm_r(mk_latex[0])
     end
     mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex'))
 
-    #p split_files = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex/split_files'))
     split_files = File.join(target_parent, '/split_files')
     pieces = File.join(target_parent, '/pieces')
     thesis = File.join(target_parent, '/thesis')
+    handout = File.join(target_parent, '/handout')
     latex = File.join(target_parent, '/latex')
 
     FileUtils.mv(split_files, File.join(mk_latex[0], "/split_files"))
     FileUtils.mv(pieces, mk_latex[0])
-    FileUtils.mv(thesis, mk_latex[0])
     FileUtils.mv(latex, mk_latex[0])
+    if thesis_or_handout == "thesis"
+      FileUtils.mv(thesis, mk_latex[0])
+    end
+    if thesis_or_handout == "handout"
+      FileUtils.mv(handout, mk_latex[0])
+    end
   end
 
-  def mk_thesis_location(input_ipynb)
+  def mk_thesis_location(input_ipynb, thesis_or_handout)
     target_parent = File.dirname(input_ipynb)
     ipynb = JSON.parse(File.read(input_ipynb))
     pickup_ipynb = ipynb["cells"].to_s.split(",")
     chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '') }
     chapter_size = chapter.size
 
-    FileUtils.mkdir_p(target_parent + '/thesis')
+    if thesis_or_handout == "thesis"
+      FileUtils.mkdir_p(target_parent + '/thesis')
+      p 'thesis'
+    end
+    if thesis_or_handout == "handout"
+      FileUtils.mkdir_p(target_parent + '/handout')
+      p 'handout'
+    end
     File.open(target_parent + '/.splits_location.tex', "w") do |f|
       for num in 0..chapter_size-1 do
         f.print("\\input{../split_files/chapter#{num}/chapter#{num}}\n")
