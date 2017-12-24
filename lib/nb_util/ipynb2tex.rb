@@ -10,7 +10,7 @@ module NbUtil
   module_function
   def ipynb2tex_thesis(target)
     loop do
-      your_informations(ARGV[1])
+      your_informations(ARGV[1], "thesis")
       print "Are you ok with it?: "
       input = STDIN.gets.to_s.chomp
       if input == 'Y' || input == 'y'
@@ -18,9 +18,9 @@ module NbUtil
         versions = Open3.capture3("gem list nb_util")
         latest_version = versions[0].split(",")
         cp_lib_data_thesis_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
-        cp_lib_data_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
+        cp_lib_data_thesis_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis_pieces")
         cp_lib_data_thesis_bundle = File.join(Dir.pwd, '/lib/data/thesis')
-        cp_lib_data_pieces_bundle = File.join(Dir.pwd, '/lib/data/pieces')
+        cp_lib_data_thesis_pieces_bundle = File.join(Dir.pwd, '/lib/data/thesis_pieces')  
         re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
 
         print "\e[32minputfile: \e[0m"
@@ -53,11 +53,11 @@ module NbUtil
 
         mk_xbb(target, re_fig)
 
-        if Dir.exist?(cp_lib_data_pieces_bundle.to_s) && Dir.exist?(cp_lib_data_thesis_bundle.to_s)
-          FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
+        if Dir.exist?(cp_lib_data_thesis_pieces_bundle.to_s) && Dir.exist?(cp_lib_data_thesis_bundle.to_s)
+          FileUtils.cp_r(cp_lib_data_thesis_pieces_bundle, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_bundle, target_parent)
         else
-          FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
+          FileUtils.cp_r(cp_lib_data_thesis_pieces_gem, target_parent)
           FileUtils.cp_r(cp_lib_data_thesis_gem, target_parent)
         end
 
@@ -77,8 +77,7 @@ module NbUtil
 
    def ipynb2tex_handout(target)
      loop do
-       your_informations(ARGV[1])
-       p 'handout'
+       your_informations(ARGV[1], "handout")
        print "Are you ok with it?: "
        input = STDIN.gets.to_s.chomp
        if input == 'Y' || input == 'y'
@@ -86,9 +85,9 @@ module NbUtil
          versions = Open3.capture3("gem list nb_util")
          latest_version = versions[0].split(",")
          cp_lib_data_handout_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/handout")
-         cp_lib_data_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/pieces")
+         cp_lib_data_handout_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/handout_pieces")
          cp_lib_data_handout_bundle = File.join(Dir.pwd, '/lib/data/handout')
-         cp_lib_data_pieces_bundle = File.join(Dir.pwd, '/lib/data/pieces')
+         cp_lib_data_handout_pieces_bundle = File.join(Dir.pwd, '/lib/data/handout_pieces')
          re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
 
          print "\e[32minputfile: \e[0m"
@@ -120,11 +119,11 @@ module NbUtil
          FileUtils.mv(target_parent + '/.splits_location.tex', target_parent + '/handout')
 
          mk_xbb(target, re_fig)
-         if Dir.exist?(cp_lib_data_pieces_bundle.to_s) && Dir.exist?(cp_lib_data_handout_bundle.to_s)
-           FileUtils.cp_r(cp_lib_data_pieces_bundle, target_parent)
+         if Dir.exist?(cp_lib_data_handout_pieces_bundle.to_s) && Dir.exist?(cp_lib_data_handout_bundle.to_s)
+           FileUtils.cp_r(cp_lib_data_handout_pieces_bundle, target_parent)
            FileUtils.cp_r(cp_lib_data_handout_bundle, target_parent)
          else
-           FileUtils.cp_r(cp_lib_data_pieces_gem, target_parent)
+           FileUtils.cp_r(cp_lib_data_handout_pieces_gem, target_parent)
            FileUtils.cp_r(cp_lib_data_handout_gem, target_parent)
          end
 
@@ -236,7 +235,7 @@ EOS
     end
   end
 
-  def your_informations(target)
+  def your_informations(target, thesis_or_handout)
     info = Array.new(3)
 
     print "thesis title: "
@@ -248,7 +247,7 @@ EOS
 
     target_parent = File.dirname(target)
     d = Date.today
-    infomations = <<"EOS"
+    thesis_infomations = <<"EOS"
 \\title{卒業論文\\\\#{info[0]}}
 \\author{関西学院大学理工学部\\\\情報科学科 西谷研究室\\\\#{info[1]} #{info[2]}}
 \\date{#{d.year}年3月}
@@ -256,15 +255,27 @@ EOS
 \\maketitle
 \\newpage
 EOS
+    handout_infomations = <<"EOS"
+\\title{{\\large#{d.year}年度 卒業論文審査}\\\\#{info[0]}}
+\\author{関西学院大学理工学部\\\\情報科学科 西谷研究室 #{info[1]} #{info[2]}}
+\\date{}
+\\begin{document}
+\\maketitle
+EOS
     FileUtils.mkdir_p(target_parent + '/split_files/informations')
     File.open(target_parent + '/informations.tex', "w") do |f|
-      f.print(infomations)
+      if thesis_or_handout == "thesis"
+        f.print(thesis_infomations)
+      end
+      if thesis_or_handout == "handout"
+        f.print(handout_infomations)
+      end
     end
   end
 
   def mk_latex_and_mv_to_latex(target, target_parent, thesis_or_handout)
     mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex'))
-    if Dir.exist?(File.join(mk_latex[0].to_s, '/pieces'))
+    if Dir.exist?(File.join(mk_latex[0].to_s, '/thesis_pieces')) || Dir.exist?(File.join(mk_latex[0].to_s, '/handout_pieces'))
       d = Date.today
       if thesis_or_handout == "thesis"
         old_file = File.join(File.dirname(target),"/old/thesis/#{d.year}#{d.month}#{d.day}")
@@ -280,13 +291,18 @@ EOS
     mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex'))
 
     split_files = File.join(target_parent, '/split_files')
-    pieces = File.join(target_parent, '/pieces')
+    if thesis_or_handout == "thesis"
+      thesis_pieces = File.join(target_parent, '/thesis_pieces')
+      FileUtils.mv(thesis_pieces, mk_latex[0])
+    end
+    if thesis_or_handout == "handout"
+      handout_pieces = File.join(target_parent, '/handout_pieces')
+      FileUtils.mv(handout_pieces, mk_latex[0])
+    end
     thesis = File.join(target_parent, '/thesis')
     handout = File.join(target_parent, '/handout')
     latex = File.join(target_parent, '/latex')
-
     FileUtils.mv(split_files, File.join(mk_latex[0], "/split_files"))
-    FileUtils.mv(pieces, mk_latex[0])
     FileUtils.mv(latex, mk_latex[0])
     if thesis_or_handout == "thesis"
       FileUtils.mv(thesis, mk_latex[0])
@@ -305,11 +321,9 @@ EOS
 
     if thesis_or_handout == "thesis"
       FileUtils.mkdir_p(target_parent + '/thesis')
-      p 'thesis'
     end
     if thesis_or_handout == "handout"
       FileUtils.mkdir_p(target_parent + '/handout')
-      p 'handout'
     end
     File.open(target_parent + '/.splits_location.tex', "w") do |f|
       for num in 0..chapter_size-1 do
