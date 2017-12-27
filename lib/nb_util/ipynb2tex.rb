@@ -20,7 +20,7 @@ module NbUtil
         cp_lib_data_thesis_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis")
         cp_lib_data_thesis_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/thesis_pieces")
         cp_lib_data_thesis_bundle = File.join(Dir.pwd, '/lib/data/thesis')
-        cp_lib_data_thesis_pieces_bundle = File.join(Dir.pwd, '/lib/data/thesis_pieces')  
+        cp_lib_data_thesis_pieces_bundle = File.join(Dir.pwd, '/lib/data/thesis_pieces')
         re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
 
         print "\e[32minputfile: \e[0m"
@@ -275,39 +275,50 @@ EOS
 
   def mk_latex_and_mv_to_latex(target, target_parent, thesis_or_handout)
     mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex'))
-    if Dir.exist?(File.join(mk_latex[0].to_s, '/thesis_pieces')) || Dir.exist?(File.join(mk_latex[0].to_s, '/handout_pieces'))
-      d = Date.today
-      if thesis_or_handout == "thesis"
-        old_file = File.join(File.dirname(target),"/old/thesis/#{d.year}#{d.month}#{d.day}")
-      end
-      if thesis_or_handout == "handout"
-        old_file = File.join(File.dirname(target),"/old/handout/#{d.year}#{d.month}#{d.day}")
-      end
-
-      FileUtils.mkdir_p(old_file)
-      FileUtils.cp_r(mk_latex[0], old_file)
-      FileUtils.rm_r(mk_latex[0])
-    end
-    mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target),'/mk_latex'))
-
-    split_files = File.join(target_parent, '/split_files')
+    d = DateTime.now
     if thesis_or_handout == "thesis"
+      if Dir.exist?(File.join(mk_latex[0].to_s, '/thesis'))
+        old_file = File.join(File.dirname(target),"/old/thesis/#{d.year}#{d.month}#{d.day}#{d.hour}#{d.min}")
+        FileUtils.mkdir_p(old_file)
+        FileUtils.cp_r(mk_latex[0], old_file)
+        FileUtils.rm_r(mk_latex[0])
+      elsif Dir.exist?(File.join(mk_latex[0].to_s, '/handout'))
+        old_file = File.join(File.dirname(target),"/old/handout/#{d.year}#{d.month}#{d.day}#{d.hour}#{d.min}")
+        FileUtils.mkdir_p(old_file)
+        FileUtils.cp_r(mk_latex[0], old_file)
+        FileUtils.rm_r(mk_latex[0])
+      end
+      mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target), '/mk_latex'))
+      split_files = File.join(target_parent, '/split_files')
       thesis_pieces = File.join(target_parent, '/thesis_pieces')
       FileUtils.mv(thesis_pieces, mk_latex[0])
-    end
-    if thesis_or_handout == "handout"
-      handout_pieces = File.join(target_parent, '/handout_pieces')
-      FileUtils.mv(handout_pieces, mk_latex[0])
-    end
-    thesis = File.join(target_parent, '/thesis')
-    handout = File.join(target_parent, '/handout')
-    latex = File.join(target_parent, '/latex')
-    FileUtils.mv(split_files, File.join(mk_latex[0], "/split_files"))
-    FileUtils.mv(latex, mk_latex[0])
-    if thesis_or_handout == "thesis"
+      thesis = File.join(target_parent, '/thesis')
+      latex = File.join(target_parent, '/latex')
+      FileUtils.mv(split_files, File.join(mk_latex[0], "/split_files"))
+      FileUtils.mv(latex, mk_latex[0])
       FileUtils.mv(thesis, mk_latex[0])
     end
+
     if thesis_or_handout == "handout"
+      if Dir.exist?(File.join(mk_latex[0].to_s, '/thesis'))
+        old_file = File.join(File.dirname(target),"/old/thesis/#{d.year}#{d.month}#{d.day}#{d.hour}#{d.min}")
+        FileUtils.mkdir_p(old_file)
+        FileUtils.cp_r(mk_latex[0], old_file)
+        FileUtils.rm_r(mk_latex[0])
+      elsif Dir.exist?(File.join(mk_latex[0].to_s, '/handout'))
+        old_file = File.join(File.dirname(target),"/old/handout/#{d.year}#{d.month}#{d.day}#{d.hour}#{d.min}")
+        FileUtils.mkdir_p(old_file)
+        FileUtils.cp_r(mk_latex[0], old_file)
+        FileUtils.rm_r(mk_latex[0])
+      end
+      mk_latex = FileUtils.mkdir_p(File.join(File.dirname(target), '/mk_latex'))
+      split_files = File.join(target_parent, '/split_files')
+      handout_pieces = File.join(target_parent, '/handout_pieces')
+      FileUtils.mv(handout_pieces, mk_latex[0])
+      handout = File.join(target_parent, '/handout')
+      latex = File.join(target_parent, '/latex')
+      FileUtils.mv(split_files, File.join(mk_latex[0], "/split_files"))
+      FileUtils.mv(latex, mk_latex[0])
       FileUtils.mv(handout, mk_latex[0])
     end
   end
