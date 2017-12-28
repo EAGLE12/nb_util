@@ -45,7 +45,7 @@ module NbUtil
         FileUtils.mv(tex_src, target_parent + '/latex')
         replace_figs(File.join(target_parent + '/latex', target_basename))
         revise_lines(File.join(target_parent + '/latex', target_basename))
-        split_files(File.join(target_parent + '/latex', target_basename), target)
+        split_files(File.join(target_parent + '/latex', target_basename), target, "thesis")
         FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')
         FileUtils.mv(target_parent + '/informations.tex', target_parent + '/split_files/informations')
         mk_thesis_location(target, "thesis")
@@ -112,7 +112,7 @@ module NbUtil
          FileUtils.mv(tex_src, target_parent + '/latex')
          replace_figs(File.join(target_parent + '/latex', target_basename))
          revise_lines(File.join(target_parent + '/latex', target_basename))
-         split_files(File.join(target_parent + '/latex', target_basename), target)
+         split_files(File.join(target_parent + '/latex', target_basename), target, "handout")
          FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')
          FileUtils.mv(target_parent + '/informations.tex', target_parent + '/split_files/informations')
          mk_thesis_location(target, "handout")
@@ -158,34 +158,63 @@ module NbUtil
     end
   end
 
-  def split_files(target, input_ipynb)
+  def split_files(target, input_ipynb, thesis_or_handout)
     target_parent = File.absolute_path("../..", target)
     ipynb = JSON.parse(File.read(input_ipynb))
     pickup_ipynb = ipynb["cells"].to_s.split(",")
     chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '') }
-    chapter_size = chapter.size
-    for num in 0..chapter_size-1 do
-      splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num}")],
-        ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
-      cont = File.read(target)
-      splitters.reverse.each do |splitter|
-        split = cont.split(splitter[0])
-        split[1].to_s.gsub!(/subsection/, 'section')
-        split[1].to_s.gsub!(/subsubsection/, 'subsection')
-        split[1].to_s.gsub!(/paragraph/, 'subsubsection')
-        cont = split[0]
+    if thesis_or_handout == "thesis"
+      chapter_size = chapter.size
+      for num in 0..chapter_size-1 do
+        splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num}")],
+          ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
+        cont = File.read(target)
+        splitters.reverse.each do |splitter|
+          split = cont.split(splitter[0])
+          split[1].to_s.gsub!(/subsection/, 'section')
+          split[1].to_s.gsub!(/subsubsection/, 'subsection')
+          split[1].to_s.gsub!(/paragraph/, 'subsubsection')
+          cont = split[0]
 
-        File.open(splitter[1], 'w') do |f|
-          f.print splitter[0].gsub!(/section/, 'chapter')
-          if num+1 != chapter_size
-            f.print split[1].sub!(/ \\section{#{chapter[num+1]}}\\label.*/m, '')
-          end
-          if num+1 == chapter_size
-            f.print split[1]
+          File.open(splitter[1], 'w') do |f|
+            f.print splitter[0].gsub!(/section/, 'chapter')
+            if num+1 != chapter_size
+              f.print split[1].sub!(/ \\section{#{chapter[num+1]}}\\label.*/m, '')
+            end
+            if num+1 == chapter_size
+              f.print split[1]
+            end
           end
         end
+        FileUtils.mv(target_parent + "/chapter#{num}.tex", target_parent + "/split_files/chapter#{num}")
       end
-      FileUtils.mv(target_parent + "/chapter#{num}.tex", target_parent + "/split_files/chapter#{num}")
+    end
+
+    if thesis_or_handout == "handout"
+      section_size = chapter.size
+      for num in 0..section_size-1 do
+        splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num}")],
+          ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
+        cont = File.read(target)
+        splitters.reverse.each do |splitter|
+          split = cont.split(splitter[0])
+      #    split[1].to_s.gsub!(/subsection/, 'section')
+      #    split[1].to_s.gsub!(/subsubsection/, 'subsection')
+      #    split[1].to_s.gsub!(/paragraph/, 'subsubsection')
+          cont = split[0]
+
+          File.open(splitter[1], 'w') do |f|
+            f.print splitter[0]#.gsub!(/section/, 'chapter')
+            if num+1 != section_size
+              f.print split[1].sub!(/ \\section{#{chapter[num+1]}}\\label.*/m, '')
+            end
+            if num+1 == section_size
+              f.print split[1]
+            end
+          end
+        end
+        FileUtils.mv(target_parent + "/chapter#{num}.tex", target_parent + "/split_files/chapter#{num}")
+      end
     end
   end
 
