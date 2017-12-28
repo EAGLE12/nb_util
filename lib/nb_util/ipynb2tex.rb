@@ -43,7 +43,7 @@ module NbUtil
 
         FileUtils.mkdir_p(target_parent + '/latex')
         FileUtils.mv(tex_src, target_parent + '/latex')
-        replace_figs(File.join(target_parent + '/latex', target_basename))
+        replace_figs(File.join(target_parent + '/latex', target_basename), "thesis")
         revise_lines(File.join(target_parent + '/latex', target_basename))
         split_files(File.join(target_parent + '/latex', target_basename), target, "thesis")
         FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')
@@ -110,7 +110,7 @@ module NbUtil
 
          FileUtils.mkdir_p(target_parent + '/latex')
          FileUtils.mv(tex_src, target_parent + '/latex')
-         replace_figs(File.join(target_parent + '/latex', target_basename))
+         replace_figs(File.join(target_parent + '/latex', target_basename), "handout")
          revise_lines(File.join(target_parent + '/latex', target_basename))
          split_files(File.join(target_parent + '/latex', target_basename), target, "handout")
          FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')
@@ -198,13 +198,9 @@ module NbUtil
         cont = File.read(target)
         splitters.reverse.each do |splitter|
           split = cont.split(splitter[0])
-      #    split[1].to_s.gsub!(/subsection/, 'section')
-      #    split[1].to_s.gsub!(/subsubsection/, 'subsection')
-      #    split[1].to_s.gsub!(/paragraph/, 'subsubsection')
           cont = split[0]
-
           File.open(splitter[1], 'w') do |f|
-            f.print splitter[0]#.gsub!(/section/, 'chapter')
+            f.print splitter[0]
             if num+1 != section_size
               f.print split[1].sub!(/ \\section{#{chapter[num+1]}}\\label.*/m, '')
             end
@@ -218,7 +214,7 @@ module NbUtil
     end
   end
 
-  def replace_figs(target)
+  def replace_figs(target, thesis_or_handout)
     lines = File.readlines(target)
     counter = -1
     # settings of each
@@ -233,22 +229,33 @@ module NbUtil
         file_name, label, size, top, bottom = [m[1], data[counter]].flatten
         caption = lines[i + 1]
         label_name = file_name.to_s.gsub('figs', '').gsub('.png', '').gsub('/', '')
-        wrap_figs = <<"EOS"
+        if thesis_or_handout == "thesis"
+          thesis_wrap_figs = <<"EOS"
 \\begin{center}
 \\includegraphics[width=#{size}mm]{../../#{file_name}}
 \\end{center}
 #{caption}
 \\label{fig:#{label}}
 EOS
-        lines[i] = wrap_figs
+        end
+        if thesis_or_handout == "handout"
+          thesis_wrap_figs = <<"EOS"
+\\begin{center}
+\\includegraphics[width=80mm]{../../#{file_name}}
+\\end{center}
+#{caption}
+\\label{fig:#{label}}
+EOS
+        end
+        lines[i] = thesis_wrap_figs
         lines.delete_at(i + 1) # if no caption, comment out here
       end
     end
-
     File.open(target, 'w') do |f|
       lines.each{|line| f.print line}
     end
   end
+
 
   def mk_xbb(target, re_fig)
     target_parent = File.absolute_path("../..", target)
