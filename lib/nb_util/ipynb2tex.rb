@@ -141,6 +141,43 @@ module NbUtil
      end
    end
 
+   def delete_folder(target)
+     loop do
+       print "Are you sure?: "
+       input = STDIN.gets.to_s.chomp
+       if input == 'Y' || input == 'y'
+
+         mk_latex = File.join(File.absolute_path("../", target), '/mk_latex')
+         old = File.join(File.absolute_path("../", target), '/old')
+         if Dir.exist?(mk_latex) && Dir.exist?(old)
+           print "\e[31mdelete: \e[0m"
+           FileUtils.rm_r(mk_latex)
+           puts "\e[31m#{mk_latex}\e[0m"
+           print "\e[31mdelete: \e[0m"
+           FileUtils.rm_r(old)
+           puts "\e[31m#{old}\e[0m"
+           break
+         elsif Dir.exist?(mk_latex)
+           print "\e[31mdelete: \e[0m"
+           FileUtils.rm_r(mk_latex)
+           puts "\e[31m#{mk_latex}\e[0m"
+           break
+         elsif Dir.exist?(old)
+           print "\e[31mdelete: \e[0m"
+           FileUtils.rm_r(old)
+           puts "\e[31m#{old}\e[0m"
+           break
+         else
+           puts "\e[31mNo such file or directory\e[0m"
+           break
+         end
+       elsif input == 'N' || input == 'n'
+         puts
+         break
+       end
+     end
+   end
+
   def revise_lines(target)
     bugs = [['\end{quote}',:chomp]]
     lines = File.readlines(target)
@@ -255,7 +292,6 @@ EOS
       lines.each{|line| f.print line}
     end
   end
-
 
   def mk_xbb(target, re_fig)
     target_parent = File.absolute_path("../..", target)

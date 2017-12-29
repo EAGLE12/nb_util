@@ -41,11 +41,14 @@ module NbUtil
       NbUtil.getcode(ARGV[1])
     end
 
-    desc "ipynb2tex [filename]", "convert ipynb to tex's thiesis format" # コマンドの使用例と、概要
+    desc "ipynb2tex [filename] [option]", "convert ipynb to tex's thiesis format" # コマンドの使用例と、概要
     option :handout, :aliases => '-h', :desc => "convert ipynb to tex's handout format"
+    option :delete, :aliases => '-d', :desc => "delete mk_latex and old folder"
     def ipynb2tex(argv0) # コマンドはメソッドとして定義する
       if options[:handout]
         NbUtil.ipynb2tex_handout(ARGV[1])
+      elsif options[:delete]
+        NbUtil.delete_folder(ARGV[1])
       else
         NbUtil.ipynb2tex_thesis(ARGV[1])
       end
