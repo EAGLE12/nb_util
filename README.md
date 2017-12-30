@@ -1,3 +1,4 @@
+<h1>Table of Contents
 - [Name](#name)
 - [Summary](#summary)
 - [Installation](#installation)
