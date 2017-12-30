@@ -8,9 +8,6 @@
 - [License](#license)
 - [Code of Conduct](#code-of-conduct)
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
-
 # Name
 
 nb_util
