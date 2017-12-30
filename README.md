@@ -1,6 +1,15 @@
+- [Name](#name)
+- [Summary](#summary)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Uninstall](#uninstall)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
+- [Code of Conduct](#code-of-conduct)
 
-<h1>Table of Contents<span class="tocSkip"></span></h1>
-<div class="toc" style="margin-top: 1em;"><ul class="toc-item"><li><span><a href="#Name" data-toc-modified-id="Name-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Name</a></span></li><li><span><a href="#Summary" data-toc-modified-id="Summary-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Summary</a></span></li><li><span><a href="#Installation" data-toc-modified-id="Installation-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Installation</a></span></li><li><span><a href="#Usage" data-toc-modified-id="Usage-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Usage</a></span></li><li><span><a href="#Uninstall" data-toc-modified-id="Uninstall-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Uninstall</a></span></li><li><span><a href="#Development" data-toc-modified-id="Development-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Development</a></span></li><li><span><a href="#Contributing" data-toc-modified-id="Contributing-7"><span class="toc-item-num">7&nbsp;&nbsp;</span>Contributing</a></span></li><li><span><a href="#License" data-toc-modified-id="License-8"><span class="toc-item-num">8&nbsp;&nbsp;</span>License</a></span></li><li><span><a href="#Code-of-Conduct" data-toc-modified-id="Code-of-Conduct-9"><span class="toc-item-num">9&nbsp;&nbsp;</span>Code of Conduct</a></span></li></ul></div>
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 # Name
 
@@ -143,7 +152,3 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 Everyone interacting in the NbUtil project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/EAGLE12/nb_util/blob/master/CODE_OF_CONDUCT.md).
 
-
-```ruby
-
-```
