@@ -284,12 +284,15 @@ EOS
 \\label{fig:#{label}}
 EOS
         end
+        lines[i]
         lines[i] = thesis_wrap_figs
         lines.delete_at(i + 1) # if no caption, comment out here
       end
     end
     File.open(target, 'w') do |f|
-      lines.each{|line| f.print line}
+      lines.each do |line|
+        f.print line.to_s.gsub(/begin{figure}/, "begin{figure}[H]")
+      end
     end
   end
 
