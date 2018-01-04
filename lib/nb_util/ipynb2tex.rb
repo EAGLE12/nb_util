@@ -199,9 +199,10 @@ module NbUtil
     target_parent = File.absolute_path("../..", target)
     ipynb = JSON.parse(File.read(input_ipynb))
     pickup_ipynb = ipynb["cells"].to_s.split(",")
-    chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '') }
+    chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '').gsub(/\\n/, '') }
     if thesis_or_handout == "thesis"
       chapter_size = chapter.size
+      p chapter
       for num in 0..chapter_size-1 do
         splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num}")],
           ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
@@ -216,7 +217,7 @@ module NbUtil
           File.open(splitter[1], 'w') do |f|
             f.print splitter[0].gsub!(/section/, 'chapter')
             if num+1 != chapter_size
-              f.print split[1].sub!(/ \\section{#{chapter[num+1]}}\\label.*/m, '')
+              f.print split[1].sub!(/\\section{#{chapter[num+1]}}\\label.*/m, '')
             end
             if num+1 == chapter_size
               f.print split[1]
@@ -269,7 +270,7 @@ module NbUtil
         if thesis_or_handout == "thesis"
           thesis_wrap_figs = <<"EOS"
 \\begin{center}
-\\includegraphics[width=#{size}mm]{../../#{file_name}}
+\\includegraphics[width=150mm]{../../#{file_name}}
 \\end{center}
 #{caption}
 \\label{fig:#{label}}
