@@ -217,10 +217,10 @@ module NbUtil
           File.open(splitter[1], 'w') do |f|
             f.print splitter[0].gsub!(/section/, 'chapter')
             if num+1 != chapter_size
-              f.print split[1].sub!(/\\section{#{chapter[num+1]}}\\label.*/m, '')
+              f.print split[1].to_s.sub!(/\\section{#{chapter[num+1]}}\\label.*/m, '')
             end
             if num+1 == chapter_size
-              f.print split[1]
+              f.print split[1].to_s
             end
           end
         end
