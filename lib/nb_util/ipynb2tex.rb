@@ -240,10 +240,10 @@ module NbUtil
           File.open(splitter[1], 'w') do |f|
             f.print splitter[0]
             if num+1 != section_size
-              f.print split[1].sub!(/ \\section{#{chapter[num+1]}}\\label.*/m, '')
+              f.print split[1].to_s.sub!(/ \\section{#{chapter[num+1]}}\\label.*/m, '')
             end
             if num+1 == section_size
-              f.print split[1]
+              f.print split[1].to_s
             end
           end
         end
@@ -315,11 +315,11 @@ EOS
     info = Array.new(3)
 
     print "thesis title: "
-    info[0] = STDIN.gets.to_s.chomp
+    info[0] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
     print "student number(eight-digit): "
-    info[1] = STDIN.gets.to_s.chomp
+    info[1] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
     print "your name: "
-    info[2] = STDIN.gets.to_s.chomp
+    info[2] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
 
     target_parent = File.dirname(target)
     d = Date.today
