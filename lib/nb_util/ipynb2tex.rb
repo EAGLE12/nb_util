@@ -50,7 +50,6 @@ module NbUtil
         FileUtils.mv(target_parent + '/informations.tex', target_parent + '/split_files/informations')
         mk_thesis_location(target, "thesis")
         FileUtils.mv(target_parent + '/.splits_location.tex', target_parent + '/thesis')
-
         mk_xbb(target, re_fig)
 
         if Dir.exist?(cp_lib_data_thesis_pieces_bundle.to_s) && Dir.exist?(cp_lib_data_thesis_bundle.to_s)
@@ -215,12 +214,12 @@ module NbUtil
           cont = split[0]
 
           File.open(splitter[1], 'w') do |f|
-            f.print splitter[0].gsub!(/section/, 'chapter')
+            f.print splitter[0].gsub(/section/, 'chapter').gsub(/_/,'\_')
             if num+1 != chapter_size
-              f.print split[1].to_s.sub!(/\\section{#{chapter[num+1]}}\\label.*/m, '')
+              f.print split[1].to_s.gsub(/\\section{#{chapter[num+1]}}\\label.*/m, '')
             end
             if num+1 == chapter_size
-              f.print split[1].to_s
+              f.print split[1].to_s#.gsub(/_/,'\_')
             end
           end
         end
