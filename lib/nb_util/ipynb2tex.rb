@@ -10,7 +10,14 @@ module NbUtil
   module_function
   def ipynb2tex_thesis(target)
     loop do
-      your_informations(ARGV[1], "thesis")
+      target_parent = File.dirname(target)
+      exist_info = File.join(target_parent, 'mk_latex/split_files/informations/informations.tex')
+      if File.exist?(exist_info)
+        FileUtils.mkdir_p(target_parent + '/split_files/informations')
+        FileUtils.cp(exist_info, target_parent)
+      else
+        your_informations(ARGV[1], "thesis")
+      end
       print "Are you ok with it?: "
       input = STDIN.gets.to_s.chomp
       if input == 'Y' || input == 'y'
@@ -29,7 +36,7 @@ module NbUtil
         print "\e[32moutputfile: \e[0m"
         tex_src = target.sub('.ipynb', '.tex')
         print "\e[32m#{tex_src}\n\e[0m"
-        target_parent = File.dirname(target)
+
         target_basename = File.basename(tex_src)
         Open3.capture3("jupyter nbconvert --to latex #{target}")
         lines = File.readlines(tex_src)
