@@ -36,7 +36,7 @@ module NbUtil
         print "\e[32moutputfile: \e[0m"
         tex_src = target.sub('.ipynb', '.tex')
         print "\e[32m#{tex_src}\n\e[0m"
-
+        target_parent = File.dirname(target)
         target_basename = File.basename(tex_src)
         Open3.capture3("jupyter nbconvert --to latex #{target}")
         lines = File.readlines(tex_src)
