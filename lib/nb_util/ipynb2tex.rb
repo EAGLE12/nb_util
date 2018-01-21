@@ -69,6 +69,7 @@ module NbUtil
 
         mk_latex_and_mv_to_latex(target, target_parent, "thesis")
         Open3.capture3("open #{target_parent}")
+#        p File.join(target_parent,"mk_latex/thesis")
         Open3.capture3("open #{target_parent}/mk_latex/thesis/thesis.tex/")
 
         exit
@@ -81,63 +82,70 @@ module NbUtil
     end
   end
 
-   def ipynb2tex_handout(target)
-     loop do
-       your_informations(ARGV[1], "handout")
-       print "Are you ok with it?: "
-       input = STDIN.gets.to_s.chomp
-       if input == 'Y' || input == 'y'
-         location = Open3.capture3("gem environment gemdir")
-         versions = Open3.capture3("gem list nb_util")
-         latest_version = versions[0].split(",")
-         cp_lib_data_handout_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/handout")
-         cp_lib_data_handout_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/handout_pieces")
-         cp_lib_data_handout_bundle = File.join(Dir.pwd, '/lib/data/handout')
-         cp_lib_data_handout_pieces_bundle = File.join(Dir.pwd, '/lib/data/handout_pieces')
-         re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
+  def ipynb2tex_handout(target)
+    loop do
+      target_parent = File.dirname(target)
+      exist_info = File.join(target_parent, 'mk_latex/split_files/informations/informations.tex')
+      if File.exist?(exist_info)
+        FileUtils.mkdir_p(target_parent + '/split_files/informations')
+        FileUtils.cp(exist_info, target_parent)
+      else
+        your_informations(ARGV[1], "handout")
+      end
+      print "Are you ok with it?: "
+      input = STDIN.gets.to_s.chomp
+      if input == 'Y' || input == 'y'
+        location = Open3.capture3("gem environment gemdir")
+        versions = Open3.capture3("gem list nb_util")
+        latest_version = versions[0].split(",")
+        cp_lib_data_handout_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/handout")
+        cp_lib_data_handout_pieces_gem = File.join(location[0].chomp, "/gems/#{latest_version[0].chomp.gsub(' (','-').gsub(')','')}/lib/data/handout_pieces")
+        cp_lib_data_handout_bundle = File.join(Dir.pwd, '/lib/data/handout')
+        cp_lib_data_handout_pieces_bundle = File.join(Dir.pwd, '/lib/data/handout_pieces')
+        re_fig = /(.+\.jpg)|(.+\.jpeg)|(.+\.png)/
 
-         print "\e[32minputfile: \e[0m"
-         target = File.expand_path(ARGV[1])
-         print "\e[32m#{target}\n\e[0m"
-         print "\e[32moutputfile: \e[0m"
-         tex_src = target.sub('.ipynb', '.tex')
-         print "\e[32m#{tex_src}\n\e[0m"
-         target_parent = File.dirname(target)
-         target_basename = File.basename(tex_src)
-         Open3.capture3("jupyter nbconvert --to latex #{target}")
-         lines = File.readlines(tex_src)
-         lines.each_with_index do |line, i|
-           line.sub!("\documentclass[11pt]{article}",
-             "\documentclass[11pt,dvipdfmx]{jsarticle}")
-           print "\e[32m#{line}\n\e[0m" if line =~ re_fig  #redにする"\e[31m\e[0m"
-           line.sub!(line, '%' + line) if line.include?('.svg')
-         end
-         File.open(tex_src, 'w') { |file| file.print lines.join }
+        print "\e[32minputfile: \e[0m"
+        target = File.expand_path(ARGV[1])
+        print "\e[32m#{target}\n\e[0m"
+        print "\e[32moutputfile: \e[0m"
+        tex_src = target.sub('.ipynb', '.tex')
+        print "\e[32m#{tex_src}\n\e[0m"
+        target_parent = File.dirname(target)
+        target_basename = File.basename(tex_src)
+        Open3.capture3("jupyter nbconvert --to latex #{target}")
+        lines = File.readlines(tex_src)
+        lines.each_with_index do |line, i|
+          line.sub!("\documentclass[11pt]{article}",
+            "\documentclass[11pt,dvipdfmx]{jsarticle}")
+          print "\e[32m#{line}\n\e[0m" if line =~ re_fig  #redにする"\e[31m\e[0m"
+          line.sub!(line, '%' + line) if line.include?('.svg')
+        end
+        File.open(tex_src, 'w') { |file| file.print lines.join }
 
-         FileUtils.mkdir_p(target_parent + '/latex')
-         FileUtils.mv(tex_src, target_parent + '/latex')
-         replace_figs(File.join(target_parent + '/latex', target_basename), "handout")
-         revise_lines(File.join(target_parent + '/latex', target_basename))
-         split_files(File.join(target_parent + '/latex', target_basename), target, "handout")
-         FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')
-         FileUtils.mv(target_parent + '/informations.tex', target_parent + '/split_files/informations')
-         mk_thesis_location(target, "handout")
-         FileUtils.mv(target_parent + '/.splits_location.tex', target_parent + '/handout')
+        FileUtils.mkdir_p(target_parent + '/latex')
+        FileUtils.mv(tex_src, target_parent + '/latex')
+        replace_figs(File.join(target_parent + '/latex', target_basename), "handout")
+        revise_lines(File.join(target_parent + '/latex', target_basename))
+        split_files(File.join(target_parent + '/latex', target_basename), target, "handout")
+        FileUtils.mv(target_parent + '/tmp.tex', target_parent + '/split_files/tmp')
+        FileUtils.mv(target_parent + '/informations.tex', target_parent + '/split_files/informations')
+        mk_thesis_location(target, "handout")
+        FileUtils.mv(target_parent + '/.splits_location.tex', target_parent + '/handout')
 
-         mk_xbb(target, re_fig)
-         if Dir.exist?(cp_lib_data_handout_pieces_bundle.to_s) && Dir.exist?(cp_lib_data_handout_bundle.to_s)
-           FileUtils.cp_r(cp_lib_data_handout_pieces_bundle, target_parent)
-           FileUtils.cp_r(cp_lib_data_handout_bundle, target_parent)
-         else
-           FileUtils.cp_r(cp_lib_data_handout_pieces_gem, target_parent)
-           FileUtils.cp_r(cp_lib_data_handout_gem, target_parent)
-         end
+        mk_xbb(target, re_fig)
+        if Dir.exist?(cp_lib_data_handout_pieces_bundle.to_s) && Dir.exist?(cp_lib_data_handout_bundle.to_s)
+          FileUtils.cp_r(cp_lib_data_handout_pieces_bundle, target_parent)
+          FileUtils.cp_r(cp_lib_data_handout_bundle, target_parent)
+        else
+          FileUtils.cp_r(cp_lib_data_handout_pieces_gem, target_parent)
+          FileUtils.cp_r(cp_lib_data_handout_gem, target_parent)
+        end
 
-         mk_latex_and_mv_to_latex(target, target_parent, "handout")
-         Open3.capture3("open #{target_parent}")
-         Open3.capture3("open #{target_parent}/mk_latex/handout/handout.tex/")
+        mk_latex_and_mv_to_latex(target, target_parent, "handout")
+        Open3.capture3("open #{target_parent}")
+        Open3.capture3("open #{target_parent}/mk_latex/handout/handout.tex/")
 
-         exit
+        exit
          break
        elsif input == 'N' || input == 'n'
          target_parent = File.dirname(target)
