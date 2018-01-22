@@ -218,7 +218,7 @@ module NbUtil
       chapter_size = chapter.size
       p chapter
       for num in 0..chapter_size-1 do
-        splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num}")],
+        splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num+1}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num+1}")],
           ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
         cont = File.read(target)
         splitters.reverse.each do |splitter|
@@ -238,14 +238,14 @@ module NbUtil
             end
           end
         end
-        FileUtils.mv(target_parent + "/chapter#{num}.tex", target_parent + "/split_files/chapter#{num}")
+        FileUtils.mv(target_parent + "/chapter#{num+1}.tex", target_parent + "/split_files/chapter#{num+1}")
       end
     end
 
     if thesis_or_handout == "handout"
       section_size = chapter.size
       for num in 0..section_size-1 do
-        splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num}")],
+        splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num+1}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num+1}")],
           ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
         cont = File.read(target)
         splitters.reverse.each do |splitter|
@@ -261,7 +261,7 @@ module NbUtil
             end
           end
         end
-        FileUtils.mv(target_parent + "/chapter#{num}.tex", target_parent + "/split_files/chapter#{num}")
+        FileUtils.mv(target_parent + "/chapter#{num+1}.tex", target_parent + "/split_files/chapter#{num+1}")
       end
     end
   end
@@ -428,7 +428,7 @@ EOS
     end
     File.open(target_parent + '/.splits_location.tex', "w") do |f|
       for num in 0..chapter_size-1 do
-        f.print("\\input{../split_files/chapter#{num}/chapter#{num}}\n")
+        f.print("\\input{../split_files/chapter#{num+1}/chapter#{num+1}}\n")
       end
     end
   end
