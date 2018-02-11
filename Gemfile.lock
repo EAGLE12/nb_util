@@ -1,7 +1,11 @@
 PATH
   remote: .
   specs:
+<<<<<<< HEAD
     nb_util (0.4.8)
+=======
+    nb_util (0.4.9)
+>>>>>>> 42a78b6f9cbe568cbd1c8327b80439134d34673e
       thor
 
 GEM

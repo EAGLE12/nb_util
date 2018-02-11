@@ -229,12 +229,12 @@ module NbUtil
           cont = split[0]
 
           File.open(splitter[1], 'w') do |f|
-            f.print splitter[0].gsub(/section/, 'chapter').gsub(/_/,'\_')
+            f.print splitter[0].sub(/section/, 'chapter').gsub(/_/,'\_')
             if num+1 != chapter_size
-              f.print split[1].to_s.gsub(/\\section{#{chapter[num+1]}}\\label.*/m, '')
+              f.print split[1].to_s.sub(/\\section{#{chapter[num+1]}}\\label.*/m, '')
             end
             if num+1 == chapter_size
-              f.print split[1].to_s#.gsub(/_/,'\_')
+              f.print split[1].to_s
             end
           end
         end
