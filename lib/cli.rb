@@ -3,6 +3,7 @@ require 'pp'
 require 'yaml'
 require 'json'
 require 'thor'
+require 'artii'
 
 module NbUtil
   class CLI < Thor
@@ -18,6 +19,13 @@ module NbUtil
       else
         say(word, :red)
       end
+    end
+
+    desc "version", "puts version" # コマンドの使用例と、概要
+    def version() # コマンドはメソッドとして定義する
+      a = Artii::Base.new :font => 'slant'
+      # a = Artii::Base.new
+      puts a.asciify("version #{NbUtil::VERSION}")
     end
 
     desc "yaml2ipynb [input filename]", "convert yaml to ipynb" # コマンドの使用例と、概要
