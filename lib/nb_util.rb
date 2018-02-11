@@ -17,6 +17,6 @@ module NbUtil
 #  puts "nb_util says hello, #{name[2]} !!"
   a = Artii::Base.new :font => 'slant'
  # a = Artii::Base.new
-  puts a.asciify("nb-util")
-  puts a.asciify("says hello, #{name[2]} !!")
+  puts a.asciify("nb-util says")
+  puts a.asciify("hello, #{name[2]} !!")
 end
