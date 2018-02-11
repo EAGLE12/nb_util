@@ -22,6 +22,7 @@ module NbUtil
     end
 
     desc "version", "puts version" # コマンドの使用例と、概要
+    map '-v' => 'version'
     def version() # コマンドはメソッドとして定義する
       a = Artii::Base.new :font => 'slant'
       # a = Artii::Base.new

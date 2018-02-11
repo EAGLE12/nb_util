@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    nb_util (0.5.2)
+    nb_util (0.5.3)
       artii
       thor
 
