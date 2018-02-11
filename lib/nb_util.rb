@@ -16,5 +16,7 @@ module NbUtil
   name = get_name(directry)
 #  puts "nb_util says hello, #{name[2]} !!"
   a = Artii::Base.new :font => 'slant'
-  puts a.asciify("nb-util says hello, #{name[2]} !!")
+ # a = Artii::Base.new
+  puts a.asciify("nb-util")
+  puts a.asciify("says hello, #{name[2]} !!")
 end
