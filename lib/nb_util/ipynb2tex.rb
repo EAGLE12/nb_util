@@ -244,6 +244,7 @@ module NbUtil
 
     if thesis_or_handout == "handout"
       section_size = chapter.size
+      p chapter
       for num in 0..section_size-1 do
         splitters = [ ["\\section{#{chapter[num]}}", target_parent + "/chapter#{num+1}.tex", FileUtils.mkdir_p(target_parent + "/split_files/chapter#{num+1}")],
           ["\\begin{Verbatim}", target_parent + '/tmp.tex', FileUtils.mkdir_p(target_parent + '/split_files/tmp')]]
