@@ -4,7 +4,6 @@ require 'yaml'
 require 'json'
 require 'thor'
 
-
 module NbUtil
   class CLI < Thor
 

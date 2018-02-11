@@ -4,6 +4,7 @@ require 'yaml'
 require 'json'
 require "nb_util/version"
 require 'cli'
+require 'artii'
 
 module NbUtil
   module_function
@@ -13,5 +14,7 @@ module NbUtil
     str.delete(' ').split(/[\/]/)
   end
   name = get_name(directry)
-  puts "nb_util says hello, #{name[2]} !!"
+#  puts "nb_util says hello, #{name[2]} !!"
+  a = Artii::Base.new :font => 'slant'
+  puts a.asciify("nb-util says hello, #{name[2]} !!")
 end
