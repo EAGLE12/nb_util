@@ -1,7 +1,8 @@
 PATH
   remote: .
   specs:
-    nb_util (0.4.7)
+    nb_util (0.4.8)
+      thor
 
 GEM
   remote: https://rubygems.org/
@@ -31,7 +32,6 @@ DEPENDENCIES
   nb_util!
   rake (~> 10.0)
   rspec (~> 3.0)
-  thor
 
 BUNDLED WITH
-   1.16.0
+   1.16.1
