@@ -213,7 +213,7 @@ module NbUtil
     target_parent = File.absolute_path("../..", target)
     ipynb = JSON.parse(File.read(input_ipynb))
     pickup_ipynb = ipynb["cells"].to_s.split(",")
-    chapter = pickup_ipynb.grep(/"# /).map{ |i| i.gsub(/.*# /, '').gsub(/".*/, '').gsub(/\\n/, '') }
+    chapter = pickup_ipynb.grep(/"# +/).map{ |i| i.gsub(/.*# +/, '').gsub(/".*/, '').gsub(/\\n/, '') }
     if thesis_or_handout == "thesis"
       chapter_size = chapter.size
       p chapter
