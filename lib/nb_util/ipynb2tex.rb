@@ -327,7 +327,7 @@ EOS
   end
 
   def your_informations(target, thesis_or_handout)
-    info = Array.new(3)
+    info = Array.new(7)
 
     print "thesis title: "
     info[0] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
@@ -335,12 +335,20 @@ EOS
     info[1] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
     print "your name: "
     info[2] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
+    print "your university: "
+    info[3] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
+    print "your major: "
+    info[4] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
+    print "your subject: "
+    info[5] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
+    print "your labo: "
+    info[6] = STDIN.gets.to_s.chomp.gsub(/_/,'\_')
 
     target_parent = File.dirname(target)
     d = Date.today
     thesis_infomations = <<"EOS"
 \\title{卒業論文\\\\#{info[0]}}
-\\author{関西学院大学理工学部\\\\情報科学科 西谷研究室\\\\#{info[1]} #{info[2]}}
+\\author{#{info[3]}#{info[4]}\\\\#{info[5]}学科 #{info[6]}研究室\\\\#{info[1]} #{info[2]}}
 \\date{#{d.year}年3月}
 \\begin{document}
 \\maketitle
@@ -348,7 +356,7 @@ EOS
 EOS
     handout_infomations = <<"EOS"
 \\title{{\\large#{d.year}年度 卒業論文審査}\\\\#{info[0]}}
-\\author{関西学院大学理工学部\\\\情報科学科 西谷研究室 #{info[1]} #{info[2]}}
+\\author{#{info[3]}#{info[4]}\\\\#{info[5]}学科 #{info[6]}研究室 #{info[1]} #{info[2]}}
 \\date{}
 \\begin{document}
 \\maketitle
